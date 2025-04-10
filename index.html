@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DocuMorph - Convert files to PDF or audio instantly. Secure, fast and easy file conversion tools with login.">
+  <meta name="keywords" content="pdf converter, video to mp3, file converter, online tools">
+  <meta name="author" content="DocuMorph">
+  <title>DocuMorph - Convert PDF & Audio Online</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.onload = () => {
+      document.querySelector('#loginForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          document.querySelector('#tools').classList.remove('hidden');
+          document.querySelector('#auth').classList.add('hidden');
+        } catch (err) {
+          alert(err.message);
+        }
+      };
+
+      document.querySelector('#pdfForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const file = document.querySelector('#pdfFile').files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('https://your-backend-url/convert/pdf', { method: 'POST', body: formData });
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'converted.pdf';
+        link.click();
+      };
+
+      document.querySelector('#audioForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const file = document.querySelector('#videoFile').files[0];
+        const formData = new FormData();
+        formData.append('video', file);
+        const res = await fetch('https://your-backend-url/convert/audio', { method: 'POST', body: formData });
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'audio.mp3';
+        link.click();
+      };
+    }
+  </script>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4">
+  <h1 class="text-3xl font-bold text-center mb-6">DocuMorph</h1>
+
+  <div id="auth" class="max-w-md mx-auto bg-white p-4 rounded-xl shadow">
+    <h2 class="text-xl font-semibold mb-4">Login</h2>
+    <form id="loginForm" class="space-y-4">
+      <input type="email" name="email" placeholder="Email" class="w-full border px-3 py-2 rounded" required />
+      <input type="password" name="password" placeholder="Password" class="w-full border px-3 py-2 rounded" required />
+      <button class="bg-blue-600 text-white px-4 py-2 rounded w-full">Login</button>
+    </form>
+  </div>
+
+  <div id="tools" class="hidden max-w-xl mx-auto mt-8">
+    <div class="bg-white p-6 rounded-xl shadow space-y-6">
+      <h2 class="text-2xl font-semibold">PDF Converter</h2>
+      <form id="pdfForm">
+        <input id="pdfFile" type="file" class="block w-full mb-2" required />
+        <button class="bg-green-600 text-white px-4 py-2 rounded">Convert to PDF</button>
+      </form>
+
+      <h2 class="text-2xl font-semibold mt-6">Video to Audio Converter</h2>
+      <form id="audioForm">
+        <input id="videoFile" type="file" class="block w-full mb-2" required />
+        <button class="bg-purple-600 text-white px-4 py-2 rounded">Convert to MP3</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
